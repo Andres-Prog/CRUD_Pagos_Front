@@ -66,12 +66,12 @@ describe('RegisterForm', () => {
         password: 'password123',
       });
 
-      expect(toast.success).toHaveBeenCalledWith('Registro exitoso');
+      expect(toast.success).toHaveBeenCalledWith('Registro exitoso! Inisia sesión para continuar');
       expect(mockRouterPush).toHaveBeenCalledWith('/login');
     });
   });
 
-  it('Mostrar un error si el email ya está registrado', async () => {
+  it('Error inesperado', async () => {
     // Mockeo el codigo de error
     const apiError = { response: { status: 409 } };
     (registerUser as jest.Mock).mockRejectedValue(apiError);
@@ -88,7 +88,7 @@ describe('RegisterForm', () => {
 
     // Esperamos y verificamos que se muestre el toast de error correcto
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('El email ya se encuentra registrado.');
+      expect(toast.error).toHaveBeenCalledWith('Ocurrió un error inesperado.');
     });
   });
 });

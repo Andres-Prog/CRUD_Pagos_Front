@@ -24,7 +24,7 @@ export default function RegisterForm() {
       onSubmit={async (values, { setSubmitting }) => {
         try {
           await registerUser(values as RegisterCredentials);
-          toast.success('¡Registro exitoso! Ahora puedes iniciar sesión.');
+          toast.success('Registro exitoso! Inisia sesión para continuar');
           router.push('/login');
         } catch (error) {
           if (error instanceof Error) {
