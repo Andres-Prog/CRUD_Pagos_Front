@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { getCustomers, deleteCustomer } from '../../services/customerService';
 import { Column, Customer } from '../../types';
-import { Container, Typography, Button, Box } from '@mui/material';
+import { Container, Typography } from '@mui/material';
 import { toast } from 'react-toastify';
 import Spinner from '../../components/common/spinner';
 import ConfirmationModal from '@/app/components/common/ConfirmationModal';
@@ -71,11 +71,11 @@ export default function CustomersDashboard() {
 
     return (
         <Container maxWidth="lg" sx={{ mt: 2 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 2 }}>
+            {/* <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 2 }}>
                 <Button variant="contained" color="primary" onClick={() => router.push('/customers/new')}>
                     Crear Cliente
                 </Button>
-            </Box>
+            </Box> */}
             <DynamicTable<Customer>
                 data={customers}
                 columns={columns}

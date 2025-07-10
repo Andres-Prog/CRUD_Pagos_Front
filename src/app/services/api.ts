@@ -8,51 +8,74 @@ const api = axios.create({
   },
 });
 
-// --- Interceptor de Peticiones (para añadir el token) ---
+//Interceptor de Peticiones para añadir el token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // verificar localStorage puede no estar disponible en el servidor
+    try {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (e) {
+      console.error('No se pudo acceder a localStorage:', e);
     }
     return config;
   },
   (error) => Promise.reject(error)
 );
 
+// Interceptor de Respuestas con manejo de 401
+// Se implementa ya que luego de un tiempo el token quedaa obsoleto y la consultas al back daban 401
 api.interceptors.response.use(
+  // La primera función se ejecuta si la respuesta es exitosa
   (response) => response,
+  // La segunda función se ejecuta si la respuesta falla
   (error) => {
     let errorMessage = 'Ocurrió un error inesperado.';
 
     if (axios.isAxiosError(error) && error.response) {
-      // Mapeamos los códigos de estado a mensajes amigables
+      // Manejo específico para el error 401
+      if (error.response.status === 401) {
+        // El token es inválido o ha expirado.
+        toast.error('Tu sesión ha expirado. Por favor, inicia sesión de nuevo.');
+        
+        // Limpiamos el token del localStorage.
+        localStorage.removeItem('authToken');
+        
+        // Redirigimos al usuario a la página de login.
+        // Usamos window.location para forzar una recarga completa y limpiar cualquier estado.
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+        
+        // Devolvemos una promesa rechazada para detener la ejecución del código original.
+        return Promise.reject(new Error('Sesión expirada'));
+      }
+
+      // Mapeo los códigos de estado a mensajes custom
       switch (error.response.status) {
-        case 400: // Bad Request
+        case 400:
           errorMessage = 'Datos inválidos. Por favor, revisa la información enviada.';
           break;
-        case 401: // Unauthorized
-          errorMessage = 'No estás autorizado para realizar esta acción.';
-          break;
-        case 404: // Not Found
+        case 404:
           errorMessage = 'El recurso solicitado no fue encontrado.';
           break;
-        case 409: // Conflict
+        case 409:
           errorMessage = error.response.data?.error || 'El recurso ya existe o hay un conflicto.';
           break;
-        case 500: // Internal Server Error
+        case 500:
           errorMessage = 'Ocurrió un error en el servidor. Por favor, inténtalo más tarde.';
           break;
       }
     } else if (error.request) {
-      // Default
       errorMessage = 'No se pudo conectar con el servidor. Revisa tu conexión a internet.';
     }
     
-    // Mostramos el error en un toast para el usuario
+    // Mostramos el toast de error para los demás casos
     toast.error(errorMessage);
 
-    // Rechazamos la promesa para que el .catch() en el componente se active si es necesario
+    // Rechazamos la promesa
     return Promise.reject(error);
   }
 );
